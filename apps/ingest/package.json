@@ -1,16 +1,15 @@
 {
-	"name": "ingest",
-	"version": "0.0.0",
-	"private": true,
-	"scripts": {
-		"deploy": "wrangler deploy",
-		"dev": "wrangler dev --test-scheduled",
-		"start": "wrangler dev --test-scheduled",
-		"cf-typegen": "wrangler types"
-	},
-	"devDependencies": {
-		"@types/node": "^26.6.6",
-		"typescript": "^5.5.2",
-		"wrangler": "^4.157.0"
-	}
+  "name": "ingest",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --test-scheduled",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc",
+    "cf-typegen": "wrangler types"
+  },
+  "devDependencies": {
+    "wrangler": "catalog:"
+  }
 }

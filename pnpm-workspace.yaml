@@ -2,16 +2,34 @@ packages:
   - apps/*
   - packages/*
 
-catalog:
-  hono: ^4
-  zod: ^3
-  typescript: ^5
-  wrangler: ^4
-
-# Pre-approve build scripts for the packages C3 itself installs that need
-# them: `workerd` downloads the platform binary and `esbuild` downloads/
-# builds native bindings. Without these, pnpm 11+ aborts the install with
-# ERR_PNPM_IGNORED_BUILDS.
 allowBuilds:
   esbuild: true
   workerd: true
+
+catalog:
+  hono: ^4
+  typescript: ^7.0.2
+  wrangler: ^4
+  zod: ^4
+
+minimumReleaseAgeExclude:
+  - '@oxlint/binding-android-arm-eabi@1.91.0'
+  - '@oxlint/binding-android-arm64@1.91.0'
+  - '@oxlint/binding-darwin-arm64@1.91.0'
+  - '@oxlint/binding-darwin-x64@1.91.0'
+  - '@oxlint/binding-freebsd-x64@1.91.0'
+  - '@oxlint/binding-linux-arm-gnueabihf@1.91.0'
+  - '@oxlint/binding-linux-arm-musleabihf@1.91.0'
+  - '@oxlint/binding-linux-arm64-gnu@1.91.0'
+  - '@oxlint/binding-linux-arm64-musl@1.91.0'
+  - '@oxlint/binding-linux-ppc64-gnu@1.91.0'
+  - '@oxlint/binding-linux-riscv64-gnu@1.91.0'
+  - '@oxlint/binding-linux-riscv64-musl@1.91.0'
+  - '@oxlint/binding-linux-s390x-gnu@1.91.0'
+  - '@oxlint/binding-linux-x64-gnu@1.91.0'
+  - '@oxlint/binding-linux-x64-musl@1.91.0'
+  - '@oxlint/binding-openharmony-arm64@1.91.0'
+  - '@oxlint/binding-win32-arm64-msvc@1.91.0'
+  - '@oxlint/binding-win32-ia32-msvc@1.91.0'
+  - '@oxlint/binding-win32-x64-msvc@1.91.0'
+  - oxlint@1.91.0
