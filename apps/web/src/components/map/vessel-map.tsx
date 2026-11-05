@@ -16,6 +16,9 @@ const ICON_ID = 'vessel-triangle';
 const LAYER_ID = 'vessels';
 const ICON_SIZE = 48;
 const SELECT_ZOOM = 14;
+// Below this zoom, vessels are thinned to one per grid cell of THIN_CELL_PX screen pixels.
+const THIN_MAX_ZOOM = 7;
+const THIN_CELL_PX = 6;
 
 // Snap outward so the box always covers the viewport, even when it is smaller than the grid.
 const floor = (value: number) => Math.floor(value * 10) / 10;
@@ -29,6 +32,19 @@ function boundsToBbox(map: MapInstance): Bbox {
     Math.min(180, ceil(b.getEast())),
     Math.min(90, ceil(b.getNorth())),
   ];
+}
+
+/** Keeps one vessel per screen-space grid cell. The lowest MMSI wins so the choice is stable between refreshes. */
+function thinVessels(vessels: VesselRecord[], zoom: number): VesselRecord[] {
+  if (zoom >= THIN_MAX_ZOOM) return vessels;
+  const cellDegrees = (THIN_CELL_PX * 360) / (512 * 2 ** zoom);
+  const cells = new globalThis.Map<string, VesselRecord>();
+  for (const vessel of vessels) {
+    const key = `${Math.floor(vessel[F.lng] / cellDegrees)}:${Math.floor(vessel[F.lat] / cellDegrees)}`;
+    const current = cells.get(key);
+    if (!current || vessel[F.mmsi] < current[F.mmsi]) cells.set(key, vessel);
+  }
+  return [...cells.values()];
 }
 
 /** White (SDF) triangle pointing north; tinted and rotated per vessel by the layer. */
@@ -50,6 +66,7 @@ function addTriangleIcon(map: MapInstance) {
 
 export function VesselMap() {
   const [bbox, setBbox] = useState<Bbox | null>(null);
+  const [zoom, setZoom] = useState(2);
   const [iconReady, setIconReady] = useState(false);
   const [hovered, setHovered] = useState<HoveredVessel | null>(null);
   const [selectedMmsi, setSelectedMmsi] = useState<number | null>(null);
@@ -57,7 +74,10 @@ export function VesselMap() {
   const mapRef = useRef<MapRef>(null);
   const { data } = useVessels(bbox);
 
-  const onViewChange = useCallback((event: { target: MapInstance }) => setBbox(boundsToBbox(event.target)), []);
+  const onViewChange = useCallback((event: { target: MapInstance }) => {
+    setBbox(boundsToBbox(event.target));
+    setZoom(Math.floor(event.target.getZoom()));
+  }, []);
 
   const onLoad = useCallback(
     (event: { target: MapInstance }) => {
@@ -71,7 +91,7 @@ export function VesselMap() {
   const geojson = useMemo<FeatureCollection<Point>>(
     () => ({
       type: 'FeatureCollection',
-      features: (data?.vessels ?? []).map((vessel) => {
+      features: thinVessels(data?.vessels ?? [], zoom).map((vessel) => {
         const shipType = vessel[F.shipType];
         return {
           type: 'Feature',
@@ -87,7 +107,7 @@ export function VesselMap() {
         };
       }),
     }),
-    [data],
+    [data, zoom],
   );
 
   const selectedRecord = useMemo(
@@ -145,7 +165,7 @@ export function VesselMap() {
       <Map
         ref={mapRef}
         mapboxAccessToken={import.meta.env.VITE_MAPBOX_TOKEN}
-        initialViewState={{ longitude: 0, latitude: 20, zoom: 2 }}
+        initialViewState={{ longitude: -35, latitude: 40, zoom: 2 }}
         mapStyle="mapbox://styles/mapbox/dark-v11"
         projection="mercator"
         attributionControl={false}
