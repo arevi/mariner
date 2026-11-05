@@ -13,6 +13,13 @@
       "bucket_name": "mariner-vessels",
     },
   ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "mariner",
+      "database_id": "mariner-local",
+    },
+  ],
   "observability": {
     "enabled": true,
   },

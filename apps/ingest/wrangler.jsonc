@@ -19,6 +19,7 @@
     {
       "binding": "DB",
       "database_name": "mariner",
+      "database_id": "mariner-local",
       "migrations_dir": "migrations",
     },
   ],

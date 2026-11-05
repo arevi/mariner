@@ -128,3 +128,14 @@
     @apply font-sans;
   }
 }
+
+.vessel-popup .mapboxgl-popup-content {
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+  pointer-events: none;
+}
+
+.vessel-popup .mapboxgl-popup-tip {
+  display: none;
+}

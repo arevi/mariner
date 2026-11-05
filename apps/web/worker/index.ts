@@ -1,4 +1,6 @@
-import { MANIFEST_KEY, manifestSchema, tileKeysForBbox, tileObjectKey, vesselRecordSchema, type Bbox } from '@mariner/ais';
+import { MANIFEST_KEY, manifestSchema, tileKeysForBbox, tileObjectKey, vesselRecordSchema, vessels, type Bbox } from '@mariner/ais';
+import { eq } from 'drizzle-orm';
+import { drizzle } from 'drizzle-orm/d1';
 import { Hono } from 'hono';
 import { z } from 'zod';
 
@@ -9,7 +11,7 @@ const bboxSchema = z
   .refine(([minLng, minLat, maxLng, maxLat]) => minLng <= maxLng && minLat <= maxLat);
 
 const tileSchema = z.array(vesselRecordSchema);
-const CACHE_CONTROL = 'public, max-age=60, s-maxage=300, stale-while-revalidate=3600';
+const CACHE_CONTROL = 'public, max-age=60, s-maxage=60, stale-while-revalidate=3600';
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -34,6 +36,16 @@ app.get('/api/vessels', async (c) => {
   const vessels = results.flat().filter(([, lat, lng]) => lng >= minLng && lng <= maxLng && lat >= minLat && lat <= maxLat);
   c.header('Cache-Control', CACHE_CONTROL);
   return c.json({ updatedAt: manifest.updatedAt, vessels });
+});
+
+app.get('/api/vessels/:mmsi', async (c) => {
+  const mmsi = z.coerce.number().int().positive().safeParse(c.req.param('mmsi'));
+  if (!mmsi.success) return c.json({ error: 'invalid mmsi' }, 400);
+
+  const [vessel] = await drizzle(c.env.DB).select().from(vessels).where(eq(vessels.mmsi, mmsi.data)).limit(1);
+  if (!vessel) return c.json({ error: 'not found' }, 404);
+  c.header('Cache-Control', 'public, max-age=60');
+  return c.json(vessel);
 });
 
 export default app satisfies ExportedHandler<Env>;
