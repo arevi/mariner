@@ -163,10 +163,16 @@ export function VesselMap() {
     () => ({
       type: 'FeatureCollection',
       features: selectedRecord
-        ? [{ type: 'Feature', geometry: { type: 'Point', coordinates: [selectedRecord[F.lng], selectedRecord[F.lat]] }, properties: {} }]
+        ? [
+            {
+              type: 'Feature',
+              geometry: { type: 'Point', coordinates: [selectedRecord[F.lng], selectedRecord[F.lat]] },
+              properties: { color: shipColors[shipTypeGroup(selectedRecord[F.shipType])] },
+            },
+          ]
         : [],
     }),
-    [selectedRecord],
+    [selectedRecord, shipColors],
   );
 
   return (
@@ -215,9 +221,9 @@ export function VesselMap() {
               type="circle"
               paint={{
                 'circle-radius': ['interpolate', ['linear'], ['zoom'], 2, 8, 8, 12, 14, 22, 18, 30],
-                'circle-color': isLight ? '#0f172a' : '#ffffff',
-                'circle-opacity': 0.06,
-                'circle-stroke-color': isLight ? '#0f172a' : '#ffffff',
+                'circle-color': ['get', 'color'],
+                'circle-opacity': 0.12,
+                'circle-stroke-color': ['get', 'color'],
                 'circle-stroke-width': 2,
                 'circle-stroke-opacity': 0.9,
               }}
