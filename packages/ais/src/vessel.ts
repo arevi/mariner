@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { VesselRow } from './schema.ts';
 
 /** [mmsi, lat, lng, sog, cog, heading, navStatus, name, shipType, lengthM, seenAt (epoch s)] */
 export const vesselRecordSchema = z.tuple([
@@ -44,3 +45,9 @@ export const VESSEL_FIELDS = {
   length: 9,
   seenAt: 10,
 } as const;
+
+/** Result of looking a vessel up by MMSI or call sign. Either half can be missing. */
+export interface VesselSearchResult {
+  vessel: VesselRow | null;
+  position: VesselRecord | null;
+}

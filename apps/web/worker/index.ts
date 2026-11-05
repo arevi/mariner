@@ -1,5 +1,15 @@
-import { MANIFEST_KEY, manifestSchema, tileKeysForBbox, tileObjectKey, vesselRecordSchema, vessels, type Bbox } from '@mariner/ais';
-import { eq } from 'drizzle-orm';
+import {
+  MANIFEST_KEY,
+  manifestSchema,
+  tileKeysForBbox,
+  tileObjectKey,
+  vesselRecordSchema,
+  vessels,
+  type Bbox,
+  type VesselRecord,
+  type VesselSearchResult,
+} from '@mariner/ais';
+import { eq, sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/d1';
 import { Hono } from 'hono';
 import { z } from 'zod';
@@ -36,6 +46,41 @@ app.get('/api/vessels', async (c) => {
   const vessels = results.flat().filter(([, lat, lng]) => lng >= minLng && lng <= maxLng && lat >= minLat && lat <= maxLat);
   c.header('Cache-Control', CACHE_CONTROL);
   return c.json({ updatedAt: manifest.updatedAt, vessels });
+});
+
+const searchSchema = z.string().trim().min(1).max(20);
+
+/** Scans every tile for the vessel's latest position (tiles are keyed by location, not MMSI). */
+async function findPosition(env: Env, mmsi: number): Promise<VesselRecord | null> {
+  const manifestObject = await env.VESSELS.get(MANIFEST_KEY);
+  if (!manifestObject) return null;
+  const manifest = manifestSchema.parse(await manifestObject.json());
+  const tiles = await Promise.all(
+    manifest.tiles.map(async (tile) => {
+      const object = await env.VESSELS.get(tileObjectKey(tile));
+      return object ? ((await object.json()) as VesselRecord[]) : [];
+    }),
+  );
+  return tiles.flat().find((record) => record[0] === mmsi) ?? null;
+}
+
+app.get('/api/search', async (c) => {
+  const parsed = searchSchema.safeParse(c.req.query('q'));
+  if (!parsed.success) return c.json({ error: 'q is required' }, 400);
+  const query = parsed.data;
+
+  const isMmsi = /^\d{9}$/.test(query);
+  const [vessel] = await drizzle(c.env.DB)
+    .select()
+    .from(vessels)
+    .where(isMmsi ? eq(vessels.mmsi, Number(query)) : sql`upper(${vessels.callSign}) = ${query.toUpperCase()}`)
+    .limit(1);
+
+  const mmsi = vessel?.mmsi ?? (isMmsi ? Number(query) : null);
+  const position = mmsi === null ? null : await findPosition(c.env, mmsi);
+  if (!vessel && !position) return c.json({ error: 'not found' }, 404);
+
+  return c.json({ vessel: vessel ?? null, position } satisfies VesselSearchResult);
 });
 
 app.get('/api/vessels/:mmsi', async (c) => {

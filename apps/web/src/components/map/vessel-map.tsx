@@ -1,9 +1,10 @@
-import { SHIP_GROUP_COLORS, VESSEL_FIELDS as F, shipTypeGroup, type Bbox } from '@mariner/ais';
+import { SHIP_GROUP_COLORS, VESSEL_FIELDS as F, shipTypeGroup, type Bbox, type VesselRecord, type VesselSearchResult } from '@mariner/ais';
 import type { FeatureCollection, Point } from 'geojson';
 import type { MapMouseEvent } from 'mapbox-gl';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { GeolocateControl, Layer, Map, NavigationControl, ScaleControl, Source, type MapRef } from 'react-map-gl/mapbox';
 import { VesselPanel } from '@/components/vessel/vessel-panel';
+import { VesselSearch } from '@/components/vessel/vessel-search';
 import { useVessels } from '@/hooks/use-vessels';
 import { resolveHeading } from '@/lib/format';
 import { VesselTooltip, type HoveredVessel } from './vessel-tooltip';
@@ -51,6 +52,7 @@ export function VesselMap() {
   const [iconReady, setIconReady] = useState(false);
   const [hovered, setHovered] = useState<HoveredVessel | null>(null);
   const [selectedMmsi, setSelectedMmsi] = useState<number | null>(null);
+  const [searched, setSearched] = useState<VesselRecord | null>(null);
   const mapRef = useRef<MapRef>(null);
   const { data } = useVessels(bbox);
 
@@ -87,7 +89,10 @@ export function VesselMap() {
     [data],
   );
 
-  const selectedRecord = useMemo(() => data?.vessels.find((vessel) => vessel[F.mmsi] === selectedMmsi), [data, selectedMmsi]);
+  const selectedRecord = useMemo(
+    () => data?.vessels.find((vessel) => vessel[F.mmsi] === selectedMmsi) ?? (searched?.[F.mmsi] === selectedMmsi ? searched : undefined),
+    [data, selectedMmsi, searched],
+  );
 
   const onMouseMove = useCallback((event: MapMouseEvent & { features?: GeoJSON.Feature[] }) => {
     const feature = event.features?.[0];
@@ -99,14 +104,30 @@ export function VesselMap() {
     );
   }, []);
 
-  const onClick = useCallback((event: MapMouseEvent & { features?: GeoJSON.Feature[] }) => {
-    const feature = event.features?.[0];
-    setSelectedMmsi((feature?.properties?.mmsi as number | undefined) ?? null);
-    if (!feature) return;
-    const [lng, lat] = (feature.geometry as Point).coordinates;
+  const flyToVessel = useCallback((lng: number, lat: number) => {
     const map = mapRef.current;
-    map?.flyTo({ center: [lng!, lat!], zoom: Math.max(map.getZoom(), SELECT_ZOOM), duration: 1200 });
+    map?.flyTo({ center: [lng, lat], zoom: Math.max(map.getZoom(), SELECT_ZOOM), duration: 1200 });
   }, []);
+
+  const onClick = useCallback(
+    (event: MapMouseEvent & { features?: GeoJSON.Feature[] }) => {
+      const feature = event.features?.[0];
+      setSelectedMmsi((feature?.properties?.mmsi as number | undefined) ?? null);
+      if (!feature) return;
+      const [lng, lat] = (feature.geometry as Point).coordinates;
+      flyToVessel(lng!, lat!);
+    },
+    [flyToVessel],
+  );
+
+  const onSearchResult = useCallback(
+    ({ vessel, position }: VesselSearchResult) => {
+      setSearched(position);
+      setSelectedMmsi(vessel?.mmsi ?? position![F.mmsi]);
+      if (position) flyToVessel(position[F.lng], position[F.lat]);
+    },
+    [flyToVessel],
+  );
 
   const selectedGeojson = useMemo<FeatureCollection<Point>>(
     () => ({
@@ -177,7 +198,11 @@ export function VesselMap() {
         <GeolocateControl position="bottom-right" />
         <ScaleControl position="bottom-left" />
       </Map>
-      {selectedMmsi !== null && <VesselPanel mmsi={selectedMmsi} record={selectedRecord} onClose={() => setSelectedMmsi(null)} />}
+      {selectedMmsi === null ? (
+        <VesselSearch onResult={onSearchResult} />
+      ) : (
+        <VesselPanel mmsi={selectedMmsi} record={selectedRecord} onClose={() => setSelectedMmsi(null)} />
+      )}
     </div>
   );
 }
