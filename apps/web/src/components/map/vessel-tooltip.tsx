@@ -1,4 +1,5 @@
 import { SHIP_GROUP_COLORS, shipTypeGroup, shipTypeLabel } from '@mariner/ais';
+import { ClockIcon, ShipIcon } from 'lucide-react';
 import { Popup } from 'react-map-gl/mapbox';
 import { useVesselDetail } from '@/hooks/use-vessel-detail';
 import { formatRelativeTime } from '@/lib/format';
@@ -14,6 +15,7 @@ export interface HoveredVessel {
 
 export function VesselTooltip({ vessel }: { vessel: HoveredVessel }) {
   const { data } = useVesselDetail(vessel.mmsi);
+  const color = SHIP_GROUP_COLORS[shipTypeGroup(vessel.shipType)];
   const callSign = data?.callSign ?? (vessel.name || null);
 
   return (
@@ -28,15 +30,28 @@ export function VesselTooltip({ vessel }: { vessel: HoveredVessel }) {
       maxWidth="none"
       className="vessel-popup"
     >
-      <div className="bg-background/70 text-foreground min-w-36 rounded-md border border-white/10 px-2.5 py-1.5 text-xs backdrop-blur-md">
-        <div className="text-sm font-semibold">{callSign ?? '—'}</div>
-        <div className="mt-0.5 flex items-center gap-1.5">
-          <span className="size-2 shrink-0 rounded-full" style={{ backgroundColor: SHIP_GROUP_COLORS[shipTypeGroup(vessel.shipType)] }} />
-          <span>{shipTypeLabel(vessel.shipType)}</span>
+      <div className="bg-background/70 w-52 overflow-hidden rounded-xl border border-white/10 shadow-xl backdrop-blur-md">
+        <div
+          className="flex items-center gap-2.5 p-2.5"
+          style={{ backgroundImage: `linear-gradient(135deg, ${color}33, transparent 70%)` }}
+        >
+          <div className="grid size-8 shrink-0 place-items-center rounded-lg" style={{ backgroundColor: `${color}33`, color }}>
+            <ShipIcon className="size-4" />
+          </div>
+          <div className="min-w-0">
+            <div className="truncate text-sm leading-tight font-semibold">{callSign ?? '—'}</div>
+            <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
+              <span className="size-1.5 shrink-0 rounded-full" style={{ backgroundColor: color }} />
+              <span className="truncate">{shipTypeLabel(vessel.shipType)}</span>
+            </div>
+          </div>
         </div>
-        <div className="text-muted-foreground mt-0.5 flex justify-between gap-3 tabular-nums">
+        <div className="text-muted-foreground flex items-center justify-between gap-3 border-t border-white/5 bg-white/5 px-2.5 py-1.5 text-xs tabular-nums">
           <span>{vessel.mmsi}</span>
-          <span>{formatRelativeTime(vessel.seenAt)}</span>
+          <span className="flex items-center gap-1">
+            <ClockIcon className="size-3" />
+            {formatRelativeTime(vessel.seenAt)}
+          </span>
         </div>
       </div>
     </Popup>

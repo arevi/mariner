@@ -80,7 +80,9 @@ export function VesselPanel({ mmsi, record, onClose }: VesselPanelProps) {
         <Badge variant="outline" className="mt-3 gap-1.5">
           <span className="size-2 rounded-full" style={{ backgroundColor: color }} />
           {shipTypeLabel(shipType)}
-          <span className="text-muted-foreground">· {SHIP_GROUP_LABELS[group]}</span>
+          {SHIP_GROUP_LABELS[group] !== shipTypeLabel(shipType) && (
+            <span className="text-muted-foreground">· {SHIP_GROUP_LABELS[group]}</span>
+          )}
         </Badge>
       </header>
       <Separator />
