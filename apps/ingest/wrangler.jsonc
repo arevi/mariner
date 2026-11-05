@@ -15,6 +15,13 @@
       "bucket_name": "mariner-vessels",
     },
   ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "mariner",
+      "migrations_dir": "migrations",
+    },
+  ],
   "vars": {
     "LISTEN_SECONDS": "480",
   },

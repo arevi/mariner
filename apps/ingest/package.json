@@ -11,10 +11,12 @@
   },
   "dependencies": {
     "@mariner/ais": "workspace:*",
+    "drizzle-orm": "^0.45.4",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@types/node": "^26.6.6",
+    "drizzle-kit": "^0.31.11",
     "wrangler": "catalog:"
   }
 }
