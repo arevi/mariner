@@ -1,12 +1,14 @@
-import { SHIP_GROUP_COLORS, VESSEL_FIELDS as F, shipTypeGroup, type Bbox, type VesselRecord, type VesselSearchResult } from '@mariner/ais';
+import { VESSEL_FIELDS as F, shipTypeGroup, type Bbox, type VesselRecord, type VesselSearchResult } from '@mariner/ais';
 import type { FeatureCollection, Point } from 'geojson';
 import type { MapMouseEvent } from 'mapbox-gl';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { AttributionControl, Layer, Map, Source, type MapRef } from 'react-map-gl/mapbox';
+import { ThemeToggle } from '@/components/theme-toggle';
 import { VesselPanel } from '@/components/vessel/vessel-panel';
 import { VesselSearch } from '@/components/vessel/vessel-search';
 import { useVessels } from '@/hooks/use-vessels';
 import { resolveHeading } from '@/lib/format';
+import { useIsLight, useShipColors } from '@/lib/theme';
 import { MapControls } from './map-controls';
 import { VesselTooltip, type HoveredVessel } from './vessel-tooltip';
 
@@ -34,15 +36,17 @@ function boundsToBbox(map: MapInstance): Bbox {
   ];
 }
 
-/** Keeps one vessel per screen-space grid cell. The lowest MMSI wins so the choice is stable between refreshes. */
-function thinVessels(vessels: VesselRecord[], zoom: number): VesselRecord[] {
+/** Keeps one vessel per screen-space grid cell. The selected vessel always wins; otherwise the lowest MMSI, so the choice is stable between refreshes. */
+function thinVessels(vessels: VesselRecord[], zoom: number, selectedMmsi: number | null): VesselRecord[] {
   if (zoom >= THIN_MAX_ZOOM) return vessels;
   const cellDegrees = (THIN_CELL_PX * 360) / (512 * 2 ** zoom);
   const cells = new globalThis.Map<string, VesselRecord>();
   for (const vessel of vessels) {
     const key = `${Math.floor(vessel[F.lng] / cellDegrees)}:${Math.floor(vessel[F.lat] / cellDegrees)}`;
     const current = cells.get(key);
-    if (!current || vessel[F.mmsi] < current[F.mmsi]) cells.set(key, vessel);
+    if (!current || vessel[F.mmsi] === selectedMmsi || (current[F.mmsi] !== selectedMmsi && vessel[F.mmsi] < current[F.mmsi])) {
+      cells.set(key, vessel);
+    }
   }
   return [...cells.values()];
 }
@@ -73,6 +77,8 @@ export function VesselMap() {
   const [searched, setSearched] = useState<VesselRecord | null>(null);
   const mapRef = useRef<MapRef>(null);
   const { data } = useVessels(bbox);
+  const isLight = useIsLight();
+  const shipColors = useShipColors();
 
   const onViewChange = useCallback((event: { target: MapInstance }) => {
     setBbox(boundsToBbox(event.target));
@@ -81,7 +87,10 @@ export function VesselMap() {
 
   const onLoad = useCallback(
     (event: { target: MapInstance }) => {
-      addTriangleIcon(event.target);
+      const map = event.target;
+      addTriangleIcon(map);
+      // Switching map styles discards added images.
+      map.on('style.load', () => addTriangleIcon(map));
       setIconReady(true);
       onViewChange(event);
     },
@@ -91,7 +100,7 @@ export function VesselMap() {
   const geojson = useMemo<FeatureCollection<Point>>(
     () => ({
       type: 'FeatureCollection',
-      features: thinVessels(data?.vessels ?? [], zoom).map((vessel) => {
+      features: thinVessels(data?.vessels ?? [], zoom, selectedMmsi).map((vessel) => {
         const shipType = vessel[F.shipType];
         return {
           type: 'Feature',
@@ -102,12 +111,12 @@ export function VesselMap() {
             shipType,
             seenAt: vessel[F.seenAt],
             heading: resolveHeading(vessel[F.heading], vessel[F.cog]) ?? 0,
-            color: SHIP_GROUP_COLORS[shipTypeGroup(shipType)],
+            color: shipColors[shipTypeGroup(shipType)],
           },
         };
       }),
     }),
-    [data, zoom],
+    [data, zoom, selectedMmsi, shipColors],
   );
 
   const selectedRecord = useMemo(
@@ -166,7 +175,7 @@ export function VesselMap() {
         ref={mapRef}
         mapboxAccessToken={import.meta.env.VITE_MAPBOX_TOKEN}
         initialViewState={{ longitude: -35, latitude: 40, zoom: 2 }}
-        mapStyle="mapbox://styles/mapbox/dark-v11"
+        mapStyle={isLight ? 'mapbox://styles/mapbox/light-v11' : 'mapbox://styles/mapbox/dark-v11'}
         projection="mercator"
         attributionControl={false}
         style={{ width: '100%', height: '100%' }}
@@ -206,9 +215,9 @@ export function VesselMap() {
               type="circle"
               paint={{
                 'circle-radius': ['interpolate', ['linear'], ['zoom'], 2, 8, 8, 12, 14, 22, 18, 30],
-                'circle-color': '#ffffff',
+                'circle-color': isLight ? '#0f172a' : '#ffffff',
                 'circle-opacity': 0.06,
-                'circle-stroke-color': '#ffffff',
+                'circle-stroke-color': isLight ? '#0f172a' : '#ffffff',
                 'circle-stroke-width': 2,
                 'circle-stroke-opacity': 0.9,
               }}
@@ -217,6 +226,7 @@ export function VesselMap() {
         )}
         {hovered && <VesselTooltip vessel={hovered} />}
         <AttributionControl position="bottom-right" compact />
+        <ThemeToggle />
         <MapControls />
       </Map>
       {selectedMmsi === null ? (

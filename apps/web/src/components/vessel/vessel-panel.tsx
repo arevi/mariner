@@ -1,12 +1,4 @@
-import {
-  NAV_STATUS_LABELS,
-  SHIP_GROUP_COLORS,
-  SHIP_GROUP_LABELS,
-  VESSEL_FIELDS as F,
-  shipTypeGroup,
-  shipTypeLabel,
-  type VesselRecord,
-} from '@mariner/ais';
+import { NAV_STATUS_LABELS, SHIP_GROUP_LABELS, VESSEL_FIELDS as F, shipTypeGroup, shipTypeLabel, type VesselRecord } from '@mariner/ais';
 import { AnchorIcon, ClockIcon, MapPinIcon, RulerIcon, ShipIcon, XIcon, type LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Badge } from '@/components/ui/badge';
@@ -15,6 +7,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { useVesselDetail } from '@/hooks/use-vessel-detail';
 import { formatDateTime, formatDegrees, formatKnots, formatRelativeTime } from '@/lib/format';
+import { useShipColors } from '@/lib/theme';
 
 function Row({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -32,14 +25,14 @@ function Section({ title, icon: Icon, children }: { title: string; icon: LucideI
         <Icon className="size-3.5" />
         {title}
       </h3>
-      <dl className="divide-y divide-white/5">{children}</dl>
+      <dl className="divide-y divide-border">{children}</dl>
     </section>
   );
 }
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg bg-white/5 px-2 py-1.5 text-center">
+    <div className="rounded-lg bg-foreground/5 px-2 py-1.5 text-center">
       <div className="text-sm font-semibold tabular-nums">{value}</div>
       <div className="text-muted-foreground text-[10px] tracking-wide uppercase">{label}</div>
     </div>
@@ -56,14 +49,14 @@ export function VesselPanel({ mmsi, record, onClose }: VesselPanelProps) {
   const { data: detail, isPending } = useVesselDetail(mmsi);
   const shipType = detail?.shipType ?? record?.[F.shipType] ?? null;
   const group = shipTypeGroup(shipType);
-  const color = SHIP_GROUP_COLORS[group];
+  const color = useShipColors()[group];
   const name = detail?.name || record?.[F.name] || `MMSI ${mmsi}`;
   const length = detail?.length ?? record?.[F.length];
   const navStatus = record?.[F.navStatus];
   const dimensions = length ? [`${length} m`, detail?.beam ? `${detail.beam} m` : null].filter(Boolean).join(' × ') : null;
 
   return (
-    <aside className="bg-background/70 absolute top-6 bottom-24 left-4 z-10 flex w-72 flex-col overflow-hidden rounded-xl border border-white/10 shadow-xl backdrop-blur-md">
+    <aside className="bg-background/70 absolute top-6 bottom-24 left-4 z-10 flex w-72 flex-col overflow-hidden rounded-xl border shadow-xl backdrop-blur-md">
       <header className="relative p-4 pb-3" style={{ backgroundImage: `linear-gradient(135deg, ${color}33, transparent 70%)` }}>
         <Button variant="ghost" size="icon-sm" className="absolute top-2 right-2" onClick={onClose} aria-label="Close">
           <XIcon />

@@ -42,6 +42,21 @@ export const SHIP_GROUP_COLORS: Record<ShipGroup, string> = {
   unknown: '#64748b',
 };
 
+/** Darker variants with enough contrast on Mapbox's light style. */
+export const SHIP_GROUP_COLORS_LIGHT: Record<ShipGroup, string> = {
+  wig: '#c026d3',
+  fishing: '#ea580c',
+  towing: '#854d0e',
+  special: '#7c3aed',
+  hsc: '#0891b2',
+  service: '#ca8a04',
+  passenger: '#2563eb',
+  cargo: '#16a34a',
+  tanker: '#dc2626',
+  other: '#64748b',
+  unknown: '#94a3b8',
+};
+
 const HAZARD = ['Hazard A', 'Hazard B', 'Hazard C', 'Hazard D'] as const;
 
 const FIXED_NAMES: Record<number, string> = {

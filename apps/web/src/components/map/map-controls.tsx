@@ -10,7 +10,7 @@ const LOCATE_ZOOM = 11;
 const ERROR_DISMISS_MS = 5000;
 const BUTTON_CLASS = 'map-control-button rounded-md';
 
-class OverlayControl implements IControl {
+export class OverlayControl implements IControl {
   container = document.createElement('div');
 
   onAdd() {

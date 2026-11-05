@@ -1,8 +1,9 @@
-import { SHIP_GROUP_COLORS, shipTypeGroup, shipTypeLabel } from '@mariner/ais';
+import { shipTypeGroup, shipTypeLabel } from '@mariner/ais';
 import { ClockIcon, ShipIcon } from 'lucide-react';
 import { Popup } from 'react-map-gl/mapbox';
 import { useVesselDetail } from '@/hooks/use-vessel-detail';
 import { formatRelativeTime } from '@/lib/format';
+import { useShipColors } from '@/lib/theme';
 
 export interface HoveredVessel {
   mmsi: number;
@@ -15,7 +16,7 @@ export interface HoveredVessel {
 
 export function VesselTooltip({ vessel }: { vessel: HoveredVessel }) {
   const { data } = useVesselDetail(vessel.mmsi);
-  const color = SHIP_GROUP_COLORS[shipTypeGroup(vessel.shipType)];
+  const color = useShipColors()[shipTypeGroup(vessel.shipType)];
   const callSign = data?.callSign ?? (vessel.name || null);
 
   return (
@@ -30,7 +31,7 @@ export function VesselTooltip({ vessel }: { vessel: HoveredVessel }) {
       maxWidth="none"
       className="vessel-popup"
     >
-      <div className="bg-background/70 w-52 overflow-hidden rounded-xl border border-white/10 shadow-xl backdrop-blur-md">
+      <div className="bg-background/70 w-52 overflow-hidden rounded-xl border shadow-xl backdrop-blur-md">
         <div
           className="flex items-center gap-2.5 p-2.5"
           style={{ backgroundImage: `linear-gradient(135deg, ${color}33, transparent 70%)` }}
@@ -46,7 +47,7 @@ export function VesselTooltip({ vessel }: { vessel: HoveredVessel }) {
             </div>
           </div>
         </div>
-        <div className="text-muted-foreground flex items-center justify-between gap-3 border-t border-white/5 bg-white/5 px-2.5 py-1.5 text-xs tabular-nums">
+        <div className="text-muted-foreground flex items-center justify-between gap-3 border-t bg-foreground/5 px-2.5 py-1.5 text-xs tabular-nums">
           <span>{vessel.mmsi}</span>
           <span className="flex items-center gap-1">
             <ClockIcon className="size-3" />

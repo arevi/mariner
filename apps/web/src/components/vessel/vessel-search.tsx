@@ -5,8 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { useVesselSearch } from '@/hooks/use-vessel-search';
+import { useIsLight } from '@/lib/theme';
 
-const ACCENT = '#38bdf8';
+const ACCENT_DARK = '#38bdf8';
+const ACCENT_LIGHT = '#0284c7';
 
 interface VesselSearchProps {
   onResult: (result: VesselSearchResult) => void;
@@ -15,6 +17,7 @@ interface VesselSearchProps {
 export function VesselSearch({ onResult }: VesselSearchProps) {
   const [query, setQuery] = useState('');
   const search = useVesselSearch();
+  const accent = useIsLight() ? ACCENT_LIGHT : ACCENT_DARK;
 
   const onSubmit = (event: FormEvent) => {
     event.preventDefault();
@@ -34,10 +37,10 @@ export function VesselSearch({ onResult }: VesselSearchProps) {
   return (
     <form
       onSubmit={onSubmit}
-      className="bg-background/70 absolute top-6 left-4 z-10 w-72 overflow-hidden rounded-xl border border-white/10 shadow-xl backdrop-blur-md"
+      className="bg-background/70 absolute top-6 left-4 z-10 w-72 overflow-hidden rounded-xl border shadow-xl backdrop-blur-md"
     >
-      <header className="flex items-center gap-3 p-4" style={{ backgroundImage: `linear-gradient(135deg, ${ACCENT}33, transparent 70%)` }}>
-        <div className="grid size-10 shrink-0 place-items-center rounded-lg" style={{ backgroundColor: `${ACCENT}33`, color: ACCENT }}>
+      <header className="flex items-center gap-3 p-4" style={{ backgroundImage: `linear-gradient(135deg, ${accent}33, transparent 70%)` }}>
+        <div className="grid size-10 shrink-0 place-items-center rounded-lg" style={{ backgroundColor: `${accent}33`, color: accent }}>
           <ShipIcon className="size-5" />
         </div>
         <div className="min-w-0">

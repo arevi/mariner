@@ -194,9 +194,12 @@
   background-repeat: no-repeat;
   background-position: center;
   background-size: 22px;
-  filter: invert(1);
   opacity: 0.65;
   transition: opacity 0.15s;
+}
+
+.dark .mapboxgl-ctrl-attrib.mapboxgl-compact .mapboxgl-ctrl-attrib-button {
+  filter: invert(1);
 }
 
 .mapboxgl-ctrl-attrib.mapboxgl-compact .mapboxgl-ctrl-attrib-button:hover {
@@ -216,5 +219,5 @@
 
 /* Beats Mapbox's unlayered `.mapboxgl-ctrl button:hover { background: #eee }`, which Tailwind utilities can't override. */
 .mapboxgl-ctrl button.map-control-button:not(:disabled):hover {
-  background-color: rgb(255 255 255 / 0.1);
+  background-color: color-mix(in oklab, var(--foreground) 10%, transparent);
 }
