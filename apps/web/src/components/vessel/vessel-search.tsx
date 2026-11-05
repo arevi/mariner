@@ -37,7 +37,7 @@ export function VesselSearch({ onResult }: VesselSearchProps) {
   return (
     <form
       onSubmit={onSubmit}
-      className="bg-background/70 absolute top-6 left-4 z-10 w-72 overflow-hidden rounded-xl border shadow-xl backdrop-blur-md"
+      className="bg-background/40 absolute top-6 left-4 z-10 w-72 overflow-hidden rounded-xl border shadow-xl backdrop-blur-xl backdrop-saturate-150"
     >
       <header className="flex items-center gap-3 p-4" style={{ backgroundImage: `linear-gradient(135deg, ${accent}33, transparent 70%)` }}>
         <div className="grid size-10 shrink-0 place-items-center rounded-lg" style={{ backgroundColor: `${accent}33`, color: accent }}>
@@ -66,7 +66,7 @@ export function VesselSearch({ onResult }: VesselSearchProps) {
             className="pl-8"
           />
         </div>
-        <Button type="submit" className="w-full" disabled={search.isPending || !query.trim()}>
+        <Button type="submit" className="w-full disabled:pointer-events-auto" disabled={search.isPending || !query.trim()}>
           {search.isPending ? 'Searching…' : 'Search'}
         </Button>
         {notFound && (

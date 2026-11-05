@@ -56,7 +56,7 @@ export function VesselPanel({ mmsi, record, onClose }: VesselPanelProps) {
   const dimensions = length ? [`${length} m`, detail?.beam ? `${detail.beam} m` : null].filter(Boolean).join(' × ') : null;
 
   return (
-    <aside className="bg-background/70 absolute top-6 bottom-24 left-4 z-10 flex w-72 flex-col overflow-hidden rounded-xl border shadow-xl backdrop-blur-md">
+    <aside className="bg-background/40 absolute top-6 bottom-24 left-4 z-10 flex w-72 flex-col overflow-hidden rounded-xl border shadow-xl backdrop-blur-xl backdrop-saturate-150">
       <header className="relative p-4 pb-3" style={{ backgroundImage: `linear-gradient(135deg, ${color}33, transparent 70%)` }}>
         <Button variant="ghost" size="icon-sm" className="absolute top-2 right-2" onClick={onClose} aria-label="Close">
           <XIcon />
