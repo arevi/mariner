@@ -9,7 +9,12 @@
     "typecheck": "tsc",
     "cf-typegen": "wrangler types"
   },
+  "dependencies": {
+    "@mariner/ais": "workspace:*",
+    "zod": "catalog:"
+  },
   "devDependencies": {
+    "@types/node": "^26.6.6",
     "wrangler": "catalog:"
   }
 }

@@ -7,7 +7,16 @@
     "enabled": true,
   },
   "triggers": {
-    "crons": ["* * * * *"],
+    "crons": ["0 * * * *"],
+  },
+  "r2_buckets": [
+    {
+      "binding": "VESSELS",
+      "bucket_name": "mariner-vessels",
+    },
+  ],
+  "vars": {
+    "LISTEN_SECONDS": "480",
   },
   "upload_source_maps": true,
 }
