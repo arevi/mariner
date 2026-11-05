@@ -139,3 +139,83 @@
 .vessel-popup .mapboxgl-popup-tip {
   display: none;
 }
+
+/* Attribution: a quiet info icon that expands into a text panel; the icon itself is the toggle. */
+.mapboxgl-ctrl-attrib.mapboxgl-compact {
+  position: relative;
+  box-sizing: border-box;
+  width: 32px;
+  height: 32px;
+  min-height: 0;
+  /* Extra 4px right margin (control group padding) centers it under the control buttons. */
+  margin: 0 14px 10px 0;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  background: color-mix(in oklab, var(--background) 45%, transparent);
+  color: var(--foreground);
+  backdrop-filter: blur(8px);
+}
+
+.mapboxgl-ctrl-attrib.mapboxgl-compact.mapboxgl-compact-show {
+  width: auto;
+  height: auto;
+  max-width: min(20rem, calc(100vw - 2rem));
+  min-height: 32px;
+  margin-right: 10px;
+  padding: 0;
+}
+
+.mapboxgl-ctrl-attrib.mapboxgl-compact::after {
+  display: none;
+}
+
+.mapboxgl-ctrl-attrib.mapboxgl-compact .mapboxgl-ctrl-attrib-inner {
+  padding: 6px 36px 6px 12px;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.mapboxgl-ctrl-attrib.mapboxgl-compact a {
+  color: inherit;
+}
+
+.mapboxgl-ctrl-attrib.mapboxgl-compact a:hover {
+  text-decoration: underline;
+}
+
+.mapboxgl-ctrl-attrib.mapboxgl-compact .mapboxgl-ctrl-attrib-button,
+.mapboxgl-ctrl-attrib.mapboxgl-compact.mapboxgl-compact-show .mapboxgl-ctrl-attrib-button {
+  top: 0;
+  right: 0;
+  bottom: auto;
+  width: 32px;
+  height: 32px;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 16px;
+  filter: invert(1);
+  opacity: 0.65;
+  transition: opacity 0.15s;
+}
+
+.mapboxgl-ctrl-attrib.mapboxgl-compact .mapboxgl-ctrl-attrib-button:hover {
+  background-color: transparent;
+  opacity: 1;
+}
+
+.mapboxgl-ctrl-attrib.mapboxgl-compact .mapboxgl-ctrl-attrib-button:focus {
+  box-shadow: none;
+}
+
+.mapboxgl-ctrl-attrib.mapboxgl-compact .mapboxgl-ctrl-attrib-button:focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--ring) 60%, transparent);
+  outline-offset: -2px;
+  border-radius: 0.5rem;
+}
+
+/* Beats Mapbox's unlayered `.mapboxgl-ctrl button:hover { background: #eee }`, which Tailwind utilities can't override. */
+.mapboxgl-ctrl button.map-control-button:not(:disabled):hover {
+  background-color: rgb(255 255 255 / 0.1);
+}

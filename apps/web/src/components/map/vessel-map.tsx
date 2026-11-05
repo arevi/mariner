@@ -2,11 +2,12 @@ import { SHIP_GROUP_COLORS, VESSEL_FIELDS as F, shipTypeGroup, type Bbox, type V
 import type { FeatureCollection, Point } from 'geojson';
 import type { MapMouseEvent } from 'mapbox-gl';
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { GeolocateControl, Layer, Map, NavigationControl, ScaleControl, Source, type MapRef } from 'react-map-gl/mapbox';
+import { AttributionControl, Layer, Map, Source, type MapRef } from 'react-map-gl/mapbox';
 import { VesselPanel } from '@/components/vessel/vessel-panel';
 import { VesselSearch } from '@/components/vessel/vessel-search';
 import { useVessels } from '@/hooks/use-vessels';
 import { resolveHeading } from '@/lib/format';
+import { MapControls } from './map-controls';
 import { VesselTooltip, type HoveredVessel } from './vessel-tooltip';
 
 type MapInstance = ReturnType<MapRef['getMap']>;
@@ -147,6 +148,7 @@ export function VesselMap() {
         initialViewState={{ longitude: 0, latitude: 20, zoom: 2 }}
         mapStyle="mapbox://styles/mapbox/dark-v11"
         projection="mercator"
+        attributionControl={false}
         style={{ width: '100%', height: '100%' }}
         interactiveLayerIds={iconReady ? [LAYER_ID] : []}
         cursor={hovered ? 'pointer' : ''}
@@ -194,9 +196,8 @@ export function VesselMap() {
           </Source>
         )}
         {hovered && <VesselTooltip vessel={hovered} />}
-        <NavigationControl position="bottom-right" />
-        <GeolocateControl position="bottom-right" />
-        <ScaleControl position="bottom-left" />
+        <AttributionControl position="bottom-right" compact />
+        <MapControls />
       </Map>
       {selectedMmsi === null ? (
         <VesselSearch onResult={onSearchResult} />
