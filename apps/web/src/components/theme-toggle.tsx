@@ -12,7 +12,7 @@ export function ThemeToggle() {
   const isLight = resolvedTheme === 'light';
 
   return createPortal(
-    <div className="bg-background/25 rounded-lg p-1 backdrop-blur-xl backdrop-saturate-150">
+    <div className="bg-background/20 rounded-xl border p-1 shadow-xl backdrop-blur-xl backdrop-saturate-150">
       <Button
         variant="ghost"
         size="icon"

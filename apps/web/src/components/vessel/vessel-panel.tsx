@@ -1,6 +1,6 @@
 import { NAV_STATUS_LABELS, SHIP_GROUP_LABELS, VESSEL_FIELDS as F, shipTypeGroup, shipTypeLabel, type VesselRecord } from '@mariner/ais';
 import { AnchorIcon, ClockIcon, MapPinIcon, RulerIcon, ShipIcon, XIcon, type LucideIcon } from 'lucide-react';
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -21,18 +21,18 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
 function Section({ title, icon: Icon, children }: { title: string; icon: LucideIcon; children: ReactNode }) {
   return (
     <section>
-      <h3 className="text-muted-foreground mb-1.5 flex items-center gap-1.5 text-[11px] font-semibold tracking-wider uppercase">
+      <h3 className="mb-1.5 flex items-center gap-1.5 text-[11px] font-semibold tracking-wider text-(--vessel-color) uppercase">
         <Icon className="size-3.5" />
         {title}
       </h3>
-      <dl className="divide-y divide-border">{children}</dl>
+      <dl className="divide-y divide-(--vessel-color)/15">{children}</dl>
     </section>
   );
 }
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg bg-foreground/5 px-2 py-1.5 text-center">
+    <div className="rounded-lg bg-(--vessel-color)/10 px-2 py-1.5 text-center">
       <div className="text-sm font-semibold tabular-nums">{value}</div>
       <div className="text-muted-foreground text-[10px] tracking-wide uppercase">{label}</div>
     </div>
@@ -56,7 +56,10 @@ export function VesselPanel({ mmsi, record, onClose }: VesselPanelProps) {
   const dimensions = length ? [`${length} m`, detail?.beam ? `${detail.beam} m` : null].filter(Boolean).join(' × ') : null;
 
   return (
-    <aside className="bg-background/40 absolute top-6 bottom-24 left-4 z-10 flex w-72 flex-col overflow-hidden rounded-xl border shadow-xl backdrop-blur-xl backdrop-saturate-150">
+    <aside
+      className="bg-background/20 absolute top-6 bottom-24 left-4 z-10 flex w-72 flex-col overflow-hidden rounded-xl border shadow-xl backdrop-blur-xl backdrop-saturate-150"
+      style={{ '--vessel-color': color } as CSSProperties}
+    >
       <header className="relative p-4 pb-3" style={{ backgroundImage: `linear-gradient(135deg, ${color}33, transparent 70%)` }}>
         <Button variant="ghost" size="icon-sm" className="absolute top-2 right-2" onClick={onClose} aria-label="Close">
           <XIcon />

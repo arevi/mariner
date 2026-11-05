@@ -31,7 +31,7 @@ export function VesselTooltip({ vessel }: { vessel: HoveredVessel }) {
       maxWidth="none"
       className="vessel-popup"
     >
-      <div className="bg-background/40 w-52 overflow-hidden rounded-xl border shadow-xl backdrop-blur-xl backdrop-saturate-150">
+      <div className="bg-background/20 w-52 overflow-hidden rounded-xl border shadow-xl backdrop-blur-xl backdrop-saturate-150">
         <div
           className="flex items-center gap-2.5 p-2.5"
           style={{ backgroundImage: `linear-gradient(135deg, ${color}33, transparent 70%)` }}

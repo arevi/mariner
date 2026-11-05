@@ -66,13 +66,13 @@ export function MapControls() {
       {locateError && (
         <p
           role="alert"
-          className="bg-background/25 text-destructive absolute right-full bottom-1 mr-2 flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-xs whitespace-nowrap backdrop-blur-xl backdrop-saturate-150"
+          className="bg-background/20 text-destructive absolute right-full bottom-1 mr-2 flex h-8 items-center gap-1.5 rounded-xl border px-2.5 shadow-xl text-xs whitespace-nowrap backdrop-blur-xl backdrop-saturate-150"
         >
           <AlertCircleIcon className="size-3.5 shrink-0" />
           {locateError}
         </p>
       )}
-      <div className="bg-background/25 flex flex-col gap-0.5 rounded-lg p-1 backdrop-blur-xl backdrop-saturate-150">
+      <div className="bg-background/20 flex flex-col gap-0.5 rounded-xl border p-1 shadow-xl backdrop-blur-xl backdrop-saturate-150">
         <Button variant="ghost" size="icon" className={BUTTON_CLASS} onClick={() => map?.zoomIn()} aria-label="Zoom in">
           <PlusIcon />
         </Button>

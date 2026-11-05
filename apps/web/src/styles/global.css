@@ -49,64 +49,64 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
+  --background: oklch(0.99 0.005 235);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
+  --primary: oklch(0.588 0.158 241);
+  --primary-foreground: oklch(0.985 0.01 235);
+  --secondary: oklch(0.96 0.01 235);
   --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
+  --muted: oklch(0.96 0.01 235);
   --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --accent: oklch(0.95 0.025 235);
+  --accent-foreground: oklch(0.3 0.06 245);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
+  --border: oklch(0.91 0.015 235);
+  --input: oklch(0.91 0.015 235);
+  --ring: oklch(0.65 0.14 238);
+  --chart-1: oklch(0.85 0.09 235);
+  --chart-2: oklch(0.72 0.13 238);
+  --chart-3: oklch(0.6 0.15 241);
+  --chart-4: oklch(0.5 0.13 244);
+  --chart-5: oklch(0.4 0.1 247);
   --radius: 0.625rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary: oklch(0.588 0.158 241);
   --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.97 0 0);
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar-ring: oklch(0.65 0.14 238);
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
+  --background: oklch(0.16 0.02 245);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
+  --primary: oklch(0.746 0.16 232);
+  --primary-foreground: oklch(0.2 0.04 245);
+  --secondary: oklch(0.28 0.03 245);
   --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
+  --muted: oklch(0.28 0.03 245);
   --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
+  --accent: oklch(0.32 0.05 240);
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
+  --border: oklch(0.85 0.05 235 / 12%);
+  --input: oklch(0.85 0.05 235 / 18%);
+  --ring: oklch(0.7 0.14 232);
+  --chart-1: oklch(0.85 0.09 235);
+  --chart-2: oklch(0.72 0.13 238);
+  --chart-3: oklch(0.6 0.15 241);
+  --chart-4: oklch(0.5 0.13 244);
+  --chart-5: oklch(0.4 0.1 247);
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.488 0.243 264.376);
@@ -114,7 +114,7 @@
   --sidebar-accent: oklch(0.269 0 0);
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar-ring: oklch(0.7 0.14 232);
 }
 
 @layer base {
@@ -144,23 +144,27 @@
 .mapboxgl-ctrl-attrib.mapboxgl-compact {
   position: relative;
   box-sizing: border-box;
-  /* Same 40px footprint as the control group above it. */
+  /* Same 40px footprint as the control group above it (border included). */
   width: 40px;
   height: 40px;
   min-height: 0;
   margin: 0 10px 10px 0;
   padding: 0;
   overflow: hidden;
-  border-radius: 0.5rem;
-  background: color-mix(in oklab, var(--background) 45%, transparent);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  background: color-mix(in oklab, var(--background) 20%, transparent);
   color: var(--foreground);
-  backdrop-filter: blur(8px);
+  box-shadow:
+    0 20px 25px -5px rgb(0 0 0 / 0.1),
+    0 8px 10px -6px rgb(0 0 0 / 0.1);
+  backdrop-filter: blur(24px) saturate(1.5);
 }
 
 .mapboxgl-ctrl-attrib.mapboxgl-compact.mapboxgl-compact-show {
   width: auto;
   height: auto;
-  max-width: min(20rem, calc(100vw - 2rem));
+  max-width: min(26rem, calc(100vw - 2rem));
   min-height: 40px;
   padding: 0;
 }
@@ -170,7 +174,7 @@
 }
 
 .mapboxgl-ctrl-attrib.mapboxgl-compact .mapboxgl-ctrl-attrib-inner {
-  padding: 11px 44px 11px 12px;
+  padding: 10px 42px 10px 12px;
   font-size: 12px;
   line-height: 18px;
 }
@@ -188,8 +192,8 @@
   top: 0;
   right: 0;
   bottom: auto;
-  width: 40px;
-  height: 40px;
+  width: 38px;
+  height: 38px;
   background-color: transparent;
   background-repeat: no-repeat;
   background-position: center;
