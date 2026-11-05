@@ -17,7 +17,17 @@
     {
       "binding": "DB",
       "database_name": "mariner",
-      "database_id": "mariner-local",
+      "database_id": "db560970-eb81-4bd7-b1b2-84626bc11e90",
+    },
+  ],
+  "ratelimits": [
+    {
+      "name": "SEARCH_LIMITER",
+      "namespace_id": "1001",
+      "simple": {
+        "limit": 30,
+        "period": 60,
+      },
     },
   ],
   "observability": {

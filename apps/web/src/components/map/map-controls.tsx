@@ -1,27 +1,14 @@
 import { AlertCircleIcon, LoaderCircleIcon, LocateFixedIcon, MinusIcon, Navigation2Icon, PlusIcon } from 'lucide-react';
-import type { IControl } from 'mapbox-gl';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useControl, useMap } from 'react-map-gl/mapbox';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { OverlayControl } from './overlay-control';
 
 const LOCATE_ZOOM = 11;
 const ERROR_DISMISS_MS = 5000;
 const BUTTON_CLASS = 'map-control-button rounded-md';
-
-export class OverlayControl implements IControl {
-  container = document.createElement('div');
-
-  onAdd() {
-    this.container.className = 'mapboxgl-ctrl';
-    return this.container;
-  }
-
-  onRemove() {
-    this.container.remove();
-  }
-}
 
 /** Zoom, compass and "my location" buttons, styled like the side panels. */
 export function MapControls() {

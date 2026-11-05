@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "wrangler dev --test-scheduled",
     "deploy": "wrangler deploy",
+    "migrate": "wrangler d1 migrations apply mariner --remote",
+    "migrate:local": "wrangler d1 migrations apply mariner --local",
     "typecheck": "tsc",
     "cf-typegen": "wrangler types"
   },

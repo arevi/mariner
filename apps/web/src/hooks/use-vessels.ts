@@ -7,7 +7,7 @@ interface VesselsResponse {
   vessels: VesselRecord[];
 }
 
-export const REFRESH_INTERVAL_MS = 60_000;
+export const REFRESH_INTERVAL_MS = 5 * 60_000;
 
 /** Fraction of the viewport size added on each side of a fetched area. */
 const PAD = 0.5;

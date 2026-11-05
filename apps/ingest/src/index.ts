@@ -4,7 +4,7 @@ import { VesselState } from './state';
 import { flush, loadPrevious } from './store';
 
 async function run(env: Env) {
-  const windowSec = Number(env.LISTEN_SECONDS) || 480;
+  const windowSec = Number(env.LISTEN_SECONDS) || 600;
   const startedAt = Date.now();
   const deadline = startedAt + windowSec * 1000;
   console.log(`ingest start: listening for ${windowSec}s`);
@@ -15,6 +15,9 @@ async function run(env: Env) {
   console.log(`loaded ${previous.records.length} vessels from previous run (${Date.now() - startedAt}ms)`);
 
   await listen(env.AISSTREAM_API_KEY, state, deadline);
+
+  // Writing now would stamp a fresh updatedAt on stale data (bad API key, upstream outage).
+  if (state.messageCount === 0) throw new Error('no AIS messages received; leaving previous snapshot untouched');
 
   const records = state.finalize();
   console.log(`listen done: ${state.messageCount} messages, ${records.length} vessels after expiry; writing to R2`);

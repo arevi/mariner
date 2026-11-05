@@ -19,7 +19,11 @@ export const vessels = sqliteTable(
     lastSeen: integer('last_seen').notNull(),
     updatedAt: integer('updated_at').notNull(),
   },
-  (table) => [index('vessels_imo_idx').on(table.imo), index('vessels_name_idx').on(table.name)],
+  (table) => [
+    index('vessels_imo_idx').on(table.imo),
+    index('vessels_name_idx').on(table.name),
+    index('vessels_call_sign_idx').on(table.callSign),
+  ],
 );
 
 export type VesselRow = typeof vessels.$inferSelect;

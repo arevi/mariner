@@ -2,7 +2,7 @@ import { MoonIcon, SunIcon } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { createPortal } from 'react-dom';
 import { useControl } from 'react-map-gl/mapbox';
-import { OverlayControl } from '@/components/map/map-controls';
+import { OverlayControl } from '@/components/map/overlay-control';
 import { Button } from '@/components/ui/button';
 
 /** Map control that sits in the bottom-right stack; must be rendered inside <Map>. */

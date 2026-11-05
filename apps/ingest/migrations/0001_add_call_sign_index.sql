@@ -1,0 +1,1 @@
+CREATE INDEX `vessels_call_sign_idx` ON `vessels` (`call_sign`);

@@ -1,8 +1,9 @@
 import { VESSEL_FIELDS as F, shipTypeGroup, type Bbox, type VesselRecord, type VesselSearchResult } from '@mariner/ais';
 import type { FeatureCollection, Point } from 'geojson';
 import type { MapMouseEvent } from 'mapbox-gl';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AttributionControl, Layer, Map, Source, type MapRef } from 'react-map-gl/mapbox';
+import { toast } from 'sonner';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { VesselPanel } from '@/components/vessel/vessel-panel';
 import { VesselSearch } from '@/components/vessel/vessel-search';
@@ -18,6 +19,7 @@ const ICON_ID = 'vessel-triangle';
 const LAYER_ID = 'vessels';
 const ICON_SIZE = 48;
 const SELECT_ZOOM = 14;
+const VESSELS_ERROR_TOAST_ID = 'vessels-error';
 // Below this zoom, vessels are thinned to one per grid cell of THIN_CELL_PX screen pixels.
 const THIN_MAX_ZOOM = 7;
 const THIN_CELL_PX = 6;
@@ -76,9 +78,14 @@ export function VesselMap() {
   const [selectedMmsi, setSelectedMmsi] = useState<number | null>(null);
   const [searched, setSearched] = useState<VesselRecord | null>(null);
   const mapRef = useRef<MapRef>(null);
-  const { data } = useVessels(bbox);
+  const { data, isError } = useVessels(bbox);
   const isLight = useIsLight();
   const shipColors = useShipColors();
+
+  useEffect(() => {
+    if (isError) toast.error('Unable to load vessels. Will retry automatically.', { id: VESSELS_ERROR_TOAST_ID });
+    else toast.dismiss(VESSELS_ERROR_TOAST_ID);
+  }, [isError]);
 
   const onViewChange = useCallback((event: { target: MapInstance }) => {
     setBbox(boundsToBbox(event.target));
