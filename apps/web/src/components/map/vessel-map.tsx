@@ -29,12 +29,17 @@ const THIN_CELL_PX = 6;
 const floor = (value: number) => Math.floor(value * 10) / 10;
 const ceil = (value: number) => Math.ceil(value * 10) / 10;
 
+/** Mapbox bounds can fall outside ±180 when world copies are visible. */
 function boundsToBbox(map: MapInstance): Bbox {
   const b = map.getBounds()!;
+  const span = b.getEast() - b.getWest();
+  const west = ((((b.getWest() + 180) % 360) + 360) % 360) - 180;
+  // A view crossing the date line can't be a single box, so fetch the full longitude range for its latitudes.
+  const wraps = span >= 360 || west + span > 180;
   return [
-    Math.max(-180, floor(b.getWest())),
+    wraps ? -180 : Math.max(-180, floor(west)),
     Math.max(-90, floor(b.getSouth())),
-    Math.min(180, ceil(b.getEast())),
+    wraps ? 180 : Math.min(180, ceil(west + span)),
     Math.min(90, ceil(b.getNorth())),
   ];
 }
