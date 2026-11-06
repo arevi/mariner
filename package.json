@@ -2,7 +2,6 @@
   "name": "mariner",
   "private": true,
   "license": "MIT",
-  "packageManager": "pnpm@12.16.1",
   "scripts": {
     "dev": "pnpm -r --parallel dev",
     "build": "pnpm -r build",
