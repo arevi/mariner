@@ -1,13 +1,15 @@
 import { VESSEL_FIELDS as F, vessels, type NewVesselRow, type VesselRow } from '@mariner/ais';
-import { gt, lt, or, sql } from 'drizzle-orm';
+import { eq, gt, lt, or, sql } from 'drizzle-orm';
+import type { BatchItem } from 'drizzle-orm/batch';
 import { drizzle, type DrizzleD1Database } from 'drizzle-orm/d1';
 import type { VesselState } from './state';
 
 type Db = DrizzleD1Database;
 
 const PRUNE_AFTER_SECONDS = 30 * 24 * 60 * 60;
-// last_seen alone is not worth a write on every run; the tiles carry the precise time.
-const LAST_SEEN_REFRESH_SECONDS = 6 * 60 * 60;
+// Each write also rewrites the table's indexes. last_seen only needs to stay far enough ahead of the prune cutoff
+// that active vessels survive; the tiles carry the precise time. Keep this well under PRUNE_AFTER_SECONDS.
+const LAST_SEEN_REFRESH_SECONDS = 7 * 24 * 60 * 60;
 // D1 allows 100 bound parameters per statement; 13 columns per row.
 const ROWS_PER_STATEMENT = 7;
 const STATEMENTS_PER_BATCH = 100;
@@ -20,11 +22,8 @@ const TRACKED = ['imo', 'callSign', 'name', 'shipType', 'length', 'beam', 'draug
 /** The subset of a D1 row that `diffVessels` compares against. */
 type ExistingRow = Pick<VesselRow, 'mmsi' | 'firstSeen' | 'lastSeen' | (typeof TRACKED)[number]>;
 
-/** Keeps the existing value when the incoming one is null. */
-const keep = (column: keyof typeof vessels.$inferSelect) => {
-  const col = vessels[column];
-  return sql`coalesce(excluded.${sql.raw(col.name)}, ${col})`;
-};
+/** Only the columns that changed, so D1 rewrites just those indexes. */
+type VesselUpdate = { mmsi: number } & Pick<NewVesselRow, 'lastSeen' | 'updatedAt'> & Partial<Pick<NewVesselRow, (typeof TRACKED)[number]>>;
 
 /** Reads the table in MMSI order, one page at a time, selecting only the columns the diff needs. */
 async function* loadVesselPages(db: Db) {
@@ -55,9 +54,10 @@ async function* loadVesselPages(db: Db) {
   }
 }
 
-/** Rows for the given MMSIs that are new or differ from what D1 already holds. Call after `state.finalize()`. */
+/** New rows, and per-row updates for existing ones that differ or are stale. Call after `state.finalize()`. */
 export function diffVessels(state: VesselState, mmsis: Iterable<number>, existing: Map<number, ExistingRow>, now: number) {
-  const changed: NewVesselRow[] = [];
+  const inserts: NewVesselRow[] = [];
+  const updates: VesselUpdate[] = [];
   for (const mmsi of mmsis) {
     const seen = state.seen.get(mmsi);
     if (!seen) continue;
@@ -76,49 +76,39 @@ export function diffVessels(state: VesselState, mmsis: Iterable<number>, existin
     };
 
     const prev = existing.get(mmsi);
-    const stale = !prev || seen.last - prev.lastSeen > LAST_SEEN_REFRESH_SECONDS;
-    const differs = !prev || TRACKED.some((key) => incoming[key] !== null && incoming[key] !== prev[key]);
-    if (!stale && !differs) continue;
+    if (!prev) {
+      inserts.push({ mmsi, ...incoming, firstSeen: seen.first, lastSeen: seen.last, updatedAt: now });
+      continue;
+    }
 
-    changed.push({
-      mmsi,
-      ...incoming,
-      firstSeen: prev?.firstSeen ?? seen.first,
-      lastSeen: Math.max(seen.last, prev?.lastSeen ?? 0),
-      updatedAt: now,
-    });
+    const update: VesselUpdate = { mmsi, lastSeen: Math.max(seen.last, prev.lastSeen), updatedAt: now };
+    let differs = false;
+    for (const key of TRACKED) {
+      // A null never overwrites a known value.
+      if (incoming[key] === null || incoming[key] === prev[key]) continue;
+      Object.assign(update, { [key]: incoming[key] });
+      differs = true;
+    }
+    if (differs || seen.last - prev.lastSeen > LAST_SEEN_REFRESH_SECONDS) updates.push(update);
   }
-  return changed;
+  return { inserts, updates };
 }
 
-export async function upsertVessels(db: Db, rows: NewVesselRow[]) {
-  const statements = [];
-  for (let i = 0; i < rows.length; i += ROWS_PER_STATEMENT) {
+export async function writeVessels(db: Db, { inserts, updates }: ReturnType<typeof diffVessels>) {
+  const statements: BatchItem<'sqlite'>[] = [];
+  for (let i = 0; i < inserts.length; i += ROWS_PER_STATEMENT) {
     statements.push(
       db
         .insert(vessels)
-        .values(rows.slice(i, i + ROWS_PER_STATEMENT))
-        .onConflictDoUpdate({
-          target: vessels.mmsi,
-          set: {
-            imo: keep('imo'),
-            callSign: keep('callSign'),
-            name: keep('name'),
-            shipType: keep('shipType'),
-            length: keep('length'),
-            beam: keep('beam'),
-            draught: keep('draught'),
-            destination: keep('destination'),
-            eta: keep('eta'),
-            lastSeen: sql`max(excluded.last_seen, ${vessels.lastSeen})`,
-            updatedAt: sql`excluded.updated_at`,
-          },
-        }),
+        .values(inserts.slice(i, i + ROWS_PER_STATEMENT))
+        .onConflictDoNothing(),
     );
   }
+  for (const { mmsi, ...set } of updates) {
+    statements.push(db.update(vessels).set(set).where(eq(vessels.mmsi, mmsi)));
+  }
   for (let i = 0; i < statements.length; i += STATEMENTS_PER_BATCH) {
-    const batch = statements.slice(i, i + STATEMENTS_PER_BATCH);
-    await db.batch(batch as [(typeof batch)[number], ...typeof batch]);
+    await db.batch(statements.slice(i, i + STATEMENTS_PER_BATCH) as [BatchItem<'sqlite'>, ...BatchItem<'sqlite'>[]]);
   }
 }
 
@@ -134,9 +124,9 @@ export async function syncVessels(d1: D1Database, state: VesselState, now = Math
   const found = new Set<number>();
   let existingCount = 0;
   let written = 0;
-  const write = async (rows: NewVesselRow[]) => {
-    await upsertVessels(db, rows);
-    written += rows.length;
+  const write = async (diff: ReturnType<typeof diffVessels>) => {
+    await writeVessels(db, diff);
+    written += diff.inserts.length + diff.updates.length;
   };
 
   // Writing behind the cursor does not affect later pages, which only read higher MMSIs.

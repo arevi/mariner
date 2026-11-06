@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { useVesselDetail } from '@/hooks/use-vessel-detail';
-import { formatDateTime, formatDegrees, formatKnots, formatRelativeTime } from '@/lib/format';
+import { formatDate, formatDateTime, formatDegrees, formatKnots, formatRelativeTime } from '@/lib/format';
 import { useShipColors } from '@/lib/theme';
 
 function Row({ label, children }: { label: string; children: ReactNode }) {
@@ -114,7 +114,7 @@ export function VesselPanel({ mmsi, record, onClose }: VesselPanelProps) {
           )}
           <Section title="History" icon={ClockIcon}>
             <Row label="First seen">{formatDateTime(detail?.firstSeen)}</Row>
-            <Row label="Last seen">{formatDateTime(detail?.lastSeen)}</Row>
+            <Row label="Last seen">{record ? formatDateTime(record[F.seenAt]) : formatDate(detail?.lastSeen)}</Row>
             <Row label="Updated">{formatDateTime(detail?.updatedAt)}</Row>
           </Section>
         </div>

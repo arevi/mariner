@@ -1,5 +1,6 @@
 const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto', style: 'short' });
 const dateTime = new Intl.DateTimeFormat('en', { dateStyle: 'medium', timeStyle: 'short' });
+const date = new Intl.DateTimeFormat('en', { dateStyle: 'medium' });
 
 const UNITS: [Intl.RelativeTimeFormatUnit, number][] = [
   ['day', 86_400],
@@ -18,6 +19,10 @@ export function formatRelativeTime(epochSec: number, nowMs = Date.now()): string
 
 export function formatDateTime(epochSec: number | null | undefined): string {
   return epochSec ? dateTime.format(new Date(epochSec * 1000)) : '—';
+}
+
+export function formatDate(epochSec: number | null | undefined): string {
+  return epochSec ? date.format(new Date(epochSec * 1000)) : '—';
 }
 
 /** AIS heading 511 means "not available". */
