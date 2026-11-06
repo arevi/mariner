@@ -7,6 +7,7 @@ import { BrowserRouter, Route, Routes } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from 'next-themes';
 import { Toaster } from '@/components/ui/sonner';
+import './lib/posthog';
 
 const queryClient = new QueryClient();
 
