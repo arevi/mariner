@@ -22,6 +22,11 @@ const MAX_BEAM = 80;
 
 const obj = (value: unknown): Record<string, unknown> | undefined =>
   value && typeof value === 'object' ? (value as Record<string, unknown>) : undefined;
+/** AISStream sets Valid to false when a decoded message failed validation. */
+const validPart = (value: unknown) => {
+  const part = obj(value);
+  return part?.Valid === false ? undefined : part;
+};
 const num = (value: unknown) => (typeof value === 'number' && Number.isFinite(value) ? value : null);
 
 function dimensionLength(dimension: unknown) {
@@ -111,7 +116,7 @@ export class VesselState {
     const meta = obj(frame?.MetaData);
     const body = obj(obj(frame?.Message)?.[String(type)]);
     const mmsi = num(meta?.MMSI);
-    if (!body || mmsi === null || !isValidMmsi(mmsi)) return;
+    if (!body || mmsi === null || !isValidMmsi(mmsi) || body.Valid === false) return;
     this.messageCount++;
     const now = Math.floor(Date.now() / 1000);
     const seen = this.seen.get(mmsi);
@@ -158,8 +163,8 @@ export class VesselState {
         });
         break;
       case 'StaticDataReport': {
-        const a = obj(body.ReportA);
-        const b = obj(body.ReportB);
+        const a = validPart(body.ReportA);
+        const b = validPart(body.ReportB);
         this.mergeStatic(mmsi, {
           name: cleanText(a?.Name),
           shipType: validShipType(b?.ShipType),
