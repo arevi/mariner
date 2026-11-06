@@ -1,13 +1,12 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import type { Bbox, VesselRecord } from '@mariner/ais';
+import { useDataStatus } from '@/hooks/use-data-status';
 
 interface VesselsResponse {
   updatedAt: string | null;
   vessels: VesselRecord[];
 }
-
-export const REFRESH_INTERVAL_MS = 5 * 60_000;
 
 /** Fraction of the viewport size added on each side of a fetched area. */
 const PAD = 0.5;
@@ -26,19 +25,21 @@ function pad([minLng, minLat, maxLng, maxLat]: Bbox): Bbox {
   ];
 }
 
-/** Fetches a padded area around the viewport and only refetches once the viewport leaves it. */
+/** Fetches a padded area around the viewport. Refetches when the viewport leaves it or the ingested data changes. */
 export function useVessels(viewport: Bbox | null) {
   const [loaded, setLoaded] = useState<Bbox | null>(null);
   if (viewport && (!loaded || !contains(loaded, viewport))) setLoaded(pad(viewport));
 
+  const status = useDataStatus();
+  const updatedAt = status.data?.updatedAt ?? null;
+
   return useQuery({
-    queryKey: ['vessels', loaded],
-    enabled: loaded !== null,
+    queryKey: ['vessels', loaded, updatedAt],
+    enabled: loaded !== null && status.isSuccess,
     placeholderData: keepPreviousData,
-    staleTime: REFRESH_INTERVAL_MS,
-    refetchInterval: REFRESH_INTERVAL_MS,
+    staleTime: Infinity,
     queryFn: async ({ signal }): Promise<VesselsResponse> => {
-      const response = await fetch(`/api/vessels?bbox=${loaded!.join(',')}`, { signal });
+      const response = await fetch(`/api/vessels?bbox=${loaded!.join(',')}&v=${updatedAt ?? ''}`, { signal });
       if (!response.ok) throw new Error(`Failed to load vessels (${response.status})`);
       return response.json();
     },

@@ -4,6 +4,7 @@ import type { MapMouseEvent } from 'mapbox-gl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AttributionControl, Layer, Map, Source, type MapRef } from 'react-map-gl/mapbox';
 import { toast } from 'sonner';
+import { DataStatus } from '@/components/data-status';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { VesselPanel } from '@/components/vessel/vessel-panel';
 import { VesselSearch } from '@/components/vessel/vessel-search';
@@ -238,6 +239,7 @@ export function VesselMap() {
           </Source>
         )}
         {hovered && <VesselTooltip vessel={hovered} />}
+        <DataStatus />
         <AttributionControl position="bottom-right" compact />
         <ThemeToggle />
         <MapControls />

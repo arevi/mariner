@@ -6,6 +6,7 @@ import {
   vesselRecordSchema,
   vessels,
   type Bbox,
+  type DataStatus,
   type VesselRecord,
   type VesselSearchResult,
 } from '@mariner/ais';
@@ -31,11 +32,19 @@ app.onError((error, c) => {
   return c.json({ error: 'internal error' }, 500);
 });
 
+app.get('/api/status', async (c) => {
+  // The manifest is written last on each run, so its upload time is the last data change. head() skips the body.
+  const manifest = await c.env.VESSELS.head(MANIFEST_KEY);
+  const updatedAt = manifest?.uploaded.toISOString() ?? null;
+  return c.json({ updatedAt } satisfies DataStatus, 200, { 'Cache-Control': 'no-cache' });
+});
+
 app.get('/api/vessels', async (c) => {
   const parsed = bboxSchema.safeParse(c.req.query('bbox'));
   if (!parsed.success) return c.json({ error: 'bbox must be minLng,minLat,maxLng,maxLat' }, 400);
   const [minLng, minLat, maxLng, maxLat] = parsed.data as unknown as Bbox;
 
+  // The client's `v` param (manifest updatedAt) is only a cache-buster: a new ingest run changes the key.
   // Cache-Control alone does not engage Cloudflare's cache for Worker responses.
   const cacheKey = new Request(c.req.url);
   const cached = await caches.default.match(cacheKey);

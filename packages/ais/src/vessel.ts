@@ -29,6 +29,11 @@ export const manifestSchema = z.object({
 
 export type Manifest = z.infer<typeof manifestSchema>;
 
+/** Response of `/api/status`: when the latest ingest run finished. */
+export interface DataStatus {
+  updatedAt: string | null;
+}
+
 export const MANIFEST_KEY = 'vessels/v1/manifest.json';
 export const tileObjectKey = (tile: string) => `vessels/v1/tiles/${tile}.json`;
 
