@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "web",
+  "name": "marginer-web",
   "main": "worker/index.ts",
   "compatibility_date": "2026-11-03",
   "assets": {

@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "ingest",
+  "name": "marginer-ingest",
   "main": "src/index.ts",
   "compatibility_date": "2026-11-03",
   "observability": {
